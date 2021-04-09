@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "85774778172",
+    "project_id": "proto-notification-app",
+    "storage_bucket": "proto-notification-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:85774778172:android:d4414a3f78ca31637b2839",
+        "android_client_info": {
+          "package_name": "com.example.proto_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "85774778172-nu2r7fuv3965gsf8bccps6pfhj1jga8f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBsdcAbLRQvjc0X3Wo4rRcElspxp8AT8eQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "85774778172-nu2r7fuv3965gsf8bccps6pfhj1jga8f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
