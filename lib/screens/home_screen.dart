@@ -1,7 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:proto_app/widgets/drawer.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -10,40 +15,26 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   TextEditingController nameController1 = TextEditingController();
-  TextEditingController inputContentController1 = TextEditingController();
-  TextEditingController outputContentController1 = TextEditingController();
+  TextEditingController contentController1 = TextEditingController();
 
   TextEditingController nameController2 = TextEditingController();
-  TextEditingController inputContentController2 = TextEditingController();
-  TextEditingController outputContentController2 = TextEditingController();
+  TextEditingController contentController2 = TextEditingController();
 
   String selectedSound1 = 'shot';
-  //DateTime selectedDate1 = DateTime.now();
+  DateTime selectedDate1 = DateTime.now();
   String notificationName1 = 'Save it';
-  String inputNotificationContent1 = 'First notification';
-  String outputNotificationContent1 = 'Try';
+  String notificationContent1 = 'First notification';
 
   String selectedSound2 = 'siren';
-  //DateTime selectedDate2 = DateTime.now();
+  DateTime selectedDate2 = DateTime.now();
   String notificationName2 = 'Call the police';
-  String inputNotificationContent2 = '911';
-  String outputNotificationContent2 = 'Emergency';
+  String notificationContent2 = 'calling 911';
 
   String seletedButton = '1';
 
   var time;
 
   bool isLoading = false;
-
-  setInitialValues() {
-    nameController1.text = notificationName1;
-    inputContentController1.text = inputNotificationContent1;
-    outputContentController1.text = outputNotificationContent1;
-
-    nameController2.text = notificationName2;
-    inputContentController2.text = inputNotificationContent2;
-    outputContentController2.text = outputNotificationContent2;
-  }
 
   // Future<void> configureLocalTimeZone() async {
   //   tz.initializeTimeZones();
@@ -54,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
   //     tz.local,
   //   );
   // }
-
+  //
   // Future<tz.TZDateTime> configureLocalTimeZone2(DateTime date) async {
   //   tz.initializeTimeZones();
   //   tz.setLocalLocation(tz.getLocation('America/Detroit'));
@@ -77,67 +68,66 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // retreivingSharedPreferences() async {
-  //   setState(() {
-  //     isLoading = true;
-  //   });
-  //   //SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-  //   final prefs = await SharedPreferences.getInstance();
-  //   if (!prefs.containsKey('notificationData')) {
-  //     setState(() {
-  //       nameController1.text = notificationName1;
-  //       contentController1.text = notificationContent1;
-  //
-  //       nameController2.text = notificationName2;
-  //       contentController2.text = notificationContent2;
-  //     });
-  //
-  //     return;
-  //   }
-  //   final extractedUserData =
-  //       json.decode(prefs.getString('notificationData')) as Map<String, Object>;
-  //   notificationName1 = extractedUserData['name1'];
-  //   notificationContent1 = extractedUserData['content1'];
-  //   selectedSound1 = extractedUserData['sound1'];
-  //   selectedDate1 = DateTime.parse(extractedUserData['time1']);
-  //   notificationName2 = extractedUserData['name2'];
-  //   notificationContent2 = extractedUserData['content2'];
-  //   selectedSound2 = extractedUserData['sound2'];
-  //   selectedDate2 = DateTime.parse(
-  //     extractedUserData['time2'],
-  //   );
-  //
-  //   nameController1.text = notificationName1;
-  //   contentController1.text = notificationContent1;
-  //
-  //   nameController2.text = notificationName2;
-  //   contentController2.text = notificationContent2;
-  // }
+  retreivingSharedPreferences() async {
+    setState(() {
+      isLoading = true;
+    });
+    //SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
+    if (!prefs.containsKey('notificationData')) {
+      setState(() {
+        nameController1.text = notificationName1;
+        contentController1.text = notificationContent1;
 
-  // Future<void> savingSharedPreferences() async {
-  //   SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-  //   final notificationData = json.encode({
-  //     'name1': nameController1.text,
-  //     'content1': contentController1.text,
-  //     'time1': selectedDate1.toString(),
-  //     'sound1': selectedSound1,
-  //     'name2': nameController2.text,
-  //     'content2': contentController2.text,
-  //     'time2': selectedDate2.toString(),
-  //     'sound2': selectedSound2,
-  //   });
-  //
-  //   sharedPreferences.setString('notificationData', notificationData);
-  // }
+        nameController2.text = notificationName2;
+        contentController2.text = notificationContent2;
+      });
+
+      return;
+    }
+    final extractedUserData =
+        json.decode(prefs.getString('notificationData')) as Map<String, Object>;
+    notificationName1 = extractedUserData['name1'];
+    notificationContent1 = extractedUserData['content1'];
+    selectedSound1 = extractedUserData['sound1'];
+    selectedDate1 = DateTime.parse(extractedUserData['time1']);
+    notificationName2 = extractedUserData['name2'];
+    notificationContent2 = extractedUserData['content2'];
+    selectedSound2 = extractedUserData['sound2'];
+    selectedDate2 = DateTime.parse(
+      extractedUserData['time2'],
+    );
+
+    nameController1.text = notificationName1;
+    contentController1.text = notificationContent1;
+
+    nameController2.text = notificationName2;
+    contentController2.text = notificationContent2;
+  }
+
+  Future<void> savingSharedPreferences() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    final notificationData = json.encode({
+      'name1': nameController1.text,
+      'content1': contentController1.text,
+      'time1': selectedDate1.toString(),
+      'sound1': selectedSound1,
+      'name2': nameController2.text,
+      'content2': contentController2.text,
+      'time2': selectedDate2.toString(),
+      'sound2': selectedSound2,
+    });
+
+    sharedPreferences.setString('notificationData', notificationData);
+  }
 
   @override
   void initState() {
-    setInitialValues();
     super.initState();
     setState(() {
       isLoading = true;
     });
-    //retreivingSharedPreferences();
+    retreivingSharedPreferences();
 
     Timer(Duration(seconds: 2), () {
       var androidInitilize = AndroidInitializationSettings('logo');
@@ -160,57 +150,61 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // Future _showNotification1(String name, String content, String sound) async {
-  //   var androidDetails = new AndroidNotificationDetails(
-  //     "Channel ID 1",
-  //     "Desi programmer 1",
-  //     "This is my channel 1",
-  //     importance: Importance.max,
-  //     sound: RawResourceAndroidNotificationSound('siren'),
-  //   );
-  //   var iSODetails = new IOSNotificationDetails();
-  //   var generalNotificationDetails =
-  //       new NotificationDetails(android: androidDetails, iOS: iSODetails);
-  //
-  //   await configureLocalTimeZone();
-  //
-  //   await fltrNotification.zonedSchedule(
-  //     0,
-  //     name,
-  //     content,
-  //     time,
-  //     generalNotificationDetails,
-  //     androidAllowWhileIdle: true,
-  //   );
-  // }
-  //
-  // Future _showNotification2(String name, String content, String sound) async {
-  //   print('notfication 2 called');
-  //   var androidDetails = new AndroidNotificationDetails(
-  //     "Channel ID",
-  //     "Shot Notification",
-  //     "This is my channel",
-  //     importance: Importance.max,
-  //     sound: RawResourceAndroidNotificationSound('shot'),
-  //   );
-  //   var iSODetails = new IOSNotificationDetails();
-  //   var generalNotificationDetails =
-  //       new NotificationDetails(android: androidDetails, iOS: iSODetails);
-  //
-  //   await configureLocalTimeZone();
-  //
-  //   //await fltrNotification.show(4, 'wer', 'wer', generalNotificationDetails);
-  //
-  //   await fltrNotification.zonedSchedule(
-  //     4,
-  //     name,
-  //     content,
-  //     time,
-  //     generalNotificationDetails,
-  //     androidAllowWhileIdle: true,
-  //   );
-  // }
-  //
+  Future _showNotification1(String name, String content, String sound) async {
+    var androidDetails = new AndroidNotificationDetails(
+      "Channel ID 1",
+      "Desi programmer 1",
+      "This is my channel 1",
+      importance: Importance.max,
+      sound: RawResourceAndroidNotificationSound('siren'),
+    );
+    var iSODetails = new IOSNotificationDetails();
+    var generalNotificationDetails =
+        new NotificationDetails(android: androidDetails, iOS: iSODetails);
+
+    fltrNotification.show(0, name, content, generalNotificationDetails);
+
+    // await configureLocalTimeZone();
+    //
+    // await fltrNotification.zonedSchedule(
+    //   0,
+    //   name,
+    //   content,
+    //   time,
+    //   generalNotificationDetails,
+    //   androidAllowWhileIdle: true,
+    // );
+  }
+
+  Future _showNotification2(String name, String content, String sound) async {
+    print('notfication 2 called');
+    var androidDetails = new AndroidNotificationDetails(
+      "Channel ID",
+      "Shot Notification",
+      "This is my channel",
+      importance: Importance.max,
+      sound: RawResourceAndroidNotificationSound('shot'),
+    );
+    var iSODetails = new IOSNotificationDetails();
+    var generalNotificationDetails =
+        new NotificationDetails(android: androidDetails, iOS: iSODetails);
+
+    //await configureLocalTimeZone();
+
+    //await fltrNotification.show(4, 'wer', 'wer', generalNotificationDetails);
+
+    fltrNotification.show(0, name, content, generalNotificationDetails);
+
+    // await fltrNotification.zonedSchedule(
+    //   4,
+    //   name,
+    //   content,
+    //   time,
+    //   generalNotificationDetails,
+    //   androidAllowWhileIdle: true,
+    // );
+  }
+
   // Future _selectAgainNotification1(DateTime time) async {
   //   var androidDetails = new AndroidNotificationDetails(
   //     "Channel ID 3",
@@ -223,29 +217,54 @@ class _HomeScreenState extends State<HomeScreen> {
   //   var generalNotificationDetails =
   //       new NotificationDetails(android: androidDetails, iOS: iSODetails);
   //
-  //   final selectDate = await configureLocalTimeZone2(
-  //     time.add(
-  //       Duration(seconds: 5),
-  //     ),
-  //   );
+  //   // final selectDate = await configureLocalTimeZone2(
+  //   //   time.add(
+  //   //     Duration(seconds: 5),
+  //   //   ),
+  //   // );
   //
-  //   await fltrNotification.zonedSchedule(
-  //     5,
-  //     'Want Another Notification ?',
-  //     'Click to Configure anther notification',
-  //     selectDate,
-  //     generalNotificationDetails,
-  //     androidAllowWhileIdle: true,
-  //   );
+  //   // await fltrNotification.zonedSchedule(
+  //   //   5,
+  //   //   'Want Another Notification ?',
+  //   //   'Click to Configure anther notification',
+  //   //   selectDate,
+  //   //   generalNotificationDetails,
+  //   //   androidAllowWhileIdle: true,
+  //   // );
   // }
+
+  saveNotificationToFirebase(
+      {String notificationContent, String notificationTitle, String sound}) {
+    String userId = FirebaseAuth.instance.currentUser.uid;
+    FirebaseFirestore.instance
+        .collection('NotificationsHistory')
+        .doc('HE9Oo0UpoWr2SgT9pXOr')
+        .collection('users')
+        .doc(userId)
+        .collection('history')
+        .add({
+      'notificationName': notificationTitle,
+      'notificationContent': notificationContent,
+      'notificationSound': sound,
+      'time': Timestamp.now(),
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: ScreenDrawer(),
       backgroundColor: Colors.grey[300],
       appBar: AppBar(
         centerTitle: true,
         title: Text('EDIT/CREATE Notifications'),
+        actions: [
+          IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () {
+                // checkUser();
+              })
+        ],
       ),
       body: isLoading
           ? Center(
@@ -354,7 +373,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             SizedBox(
                               height: 25,
                             ),
-                            Text('Input Notification Content'),
+                            Text('Notification Content'),
                             SizedBox(
                               height: 10,
                             ),
@@ -366,13 +385,15 @@ class _HomeScreenState extends State<HomeScreen> {
                               padding: EdgeInsets.only(left: 30, right: 20),
                               child: TextField(
                                 controller: seletedButton == '1'
-                                    ? inputContentController1
-                                    : inputContentController2,
+                                    ? contentController1
+                                    : contentController2,
                                 decoration: InputDecoration(
                                   border: InputBorder.none,
                                 ),
                                 onChanged: (value) {
-                                  setState(() {});
+                                  setState(() {
+                                    notificationContent1 = value;
+                                  });
                                 },
                               ),
                             ),
@@ -419,31 +440,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             //   ],
                             // ),
 
-                            Text('Output Notification Content'),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.grey[200],
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              padding: EdgeInsets.only(left: 30, right: 20),
-                              child: TextField(
-                                controller: seletedButton == '1'
-                                    ? outputContentController1
-                                    : outputContentController2,
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                ),
-                                onChanged: (value) {
-                                  setState(() {});
-                                },
-                              ),
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
                             TextButton.icon(
                                 onPressed: () {
                                   // _showNotification();
@@ -514,6 +510,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     : selectedSound2),
                               ],
                             ),
+                            SizedBox(
+                              height: 30,
+                            ),
                           ],
                         ),
                       ),
@@ -524,7 +523,46 @@ class _HomeScreenState extends State<HomeScreen> {
                     Container(
                       width: double.infinity,
                       child: GestureDetector(
-                        onTap: () async {},
+                        onTap: () async {
+                          if (seletedButton == '1') {
+                            if (selectedSound1 == 'shot') {
+                              saveNotificationToFirebase(
+                                  notificationTitle: nameController1.text,
+                                  notificationContent: contentController1.text,
+                                  sound: 'shot');
+                              _showNotification2(nameController1.text,
+                                  contentController1.text, 'shot');
+                            } else {
+                              saveNotificationToFirebase(
+                                  notificationTitle: nameController1.text,
+                                  notificationContent: contentController1.text,
+                                  sound: 'siren');
+                              _showNotification1(nameController1.text,
+                                  contentController1.text, 'siren');
+                            }
+                          } else {
+                            if (selectedSound2 == 'shot') {
+                              saveNotificationToFirebase(
+                                  notificationTitle: nameController2.text,
+                                  notificationContent: contentController2.text,
+                                  sound: 'shot');
+                              _showNotification2(nameController2.text,
+                                  contentController2.text, 'shot');
+                            } else {
+                              saveNotificationToFirebase(
+                                  notificationTitle: nameController2.text,
+                                  notificationContent: contentController2.text,
+                                  sound: 'siren');
+                              _showNotification1(nameController2.text,
+                                  contentController2.text, 'siren');
+                            }
+                          }
+
+                          savingSharedPreferences();
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Notification Created ')));
+                        },
                         child: Container(
                           alignment: Alignment.center,
                           width: MediaQuery.of(context).size.width * 0.8,
